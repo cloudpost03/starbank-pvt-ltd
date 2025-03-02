@@ -1,100 +1,16 @@
-pipeline {
-    agent any
+- name : Configure Docker on EC2 Instances
+  hosts : all
+  become: true
+  connection : ssh
+  tasks : 
+  - name: updating apt
+    command : sudo apt-get update
 
-    environment {
-        ANSIBLE_PLAYBOOK = 'install_docker.yml'
-        INVENTORY_FILE   = 'inventory.ini'
-    }
+  - name : Install Docker
+    command : sudo apt-get install -y docker.io
 
-    parameters {
-        booleanParam(name: 'DESTROY_INFRA', defaultValue: false, description: 'Destroy Terraform Infrastructure after execution')
-    }
+  - name : Start Docker Service
+    command : sudo systemctl start docker
 
-    stages {
-        stage('Checkout Code') {
-            steps {
-                script {
-                    echo 'Pulling latest code from repository...'
-                    checkout scm
-                }
-            }
-        }
-
-        stage('Terraform Init & Apply') {
-            steps {
-                withCredentials([
-                    string(credentialsId: 'AWS_ACCESS_KEY', variable: 'AWS_ACCESS_KEY_ID'),
-                    string(credentialsId: 'AWS_SECRET_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
-                ]) {
-                    script {
-                        echo 'Applying Terraform to provision EC2 instances...'
-                        sh '''
-                        export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-                        export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-                        
-                        terraform init
-                        terraform apply -auto-approve
-                        '''
-                    }
-                }
-            }
-        }
-
-        stage('Install Ansible on Jenkins') {
-            steps {
-                script {
-                    echo 'Installing Ansible on Jenkins Node...'
-                    sh '''
-                    echo "jenkins" | sudo -S apt update
-                    echo "jenkins" | sudo -S apt install -y ansible
-                    ansible --version
-                    '''
-                }
-            }
-        }
-
-        stage('Run Ansible Playbook') {
-            steps {
-                withCredentials([string(credentialsId: 'dockerhub-token', variable: 'DOCKERHUB_TOKEN')]) {
-                    script {
-                        echo 'Executing Ansible Playbook to configure Docker on EC2 instances...'
-                        sh '''
-                        ansible-playbook -i ${INVENTORY_FILE} ${ANSIBLE_PLAYBOOK} \
-                        --extra-vars "dockerhub_token=${DOCKERHUB_TOKEN}"
-                        '''
-                    }
-                }
-            }
-        }
-
-        stage('Run Docker Container on EC2') {
-            steps {
-                withCredentials([string(credentialsId: 'dockerhub-token', variable: 'DOCKERHUB_TOKEN')]) {
-                    script {
-                        echo 'Running BankingApp container on EC2...'
-                        sh '''
-                        ansible all -i ${INVENTORY_FILE} -m shell -a "
-                        docker login -u your-dockerhub-username --password-stdin <<< ${DOCKERHUB_TOKEN} &&
-                        docker pull your-dockerhub-username/bankingapp:latest &&
-                        docker run -d --name bankingapp -p 8081:8081 your-dockerhub-username/bankingapp:latest"
-                        '''
-                    }
-                }
-            }
-        }
-
-        stage('Cleanup Terraform Resources (Optional)') {
-            when {
-                expression { return params.DESTROY_INFRA == true }
-            }
-            steps {
-                script {
-                    echo 'Destroying Terraform resources...'
-                    sh '''
-                    terraform destroy -auto-approve
-                    '''
-                }
-            }
-        }
-    }
-}
+  - name: Deploy Docker Container
+    command: docker run -itd -p 8084:8081 pravinkr11/bank-finance:0.1"
