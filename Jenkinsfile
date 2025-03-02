@@ -51,7 +51,9 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                bat 'wsl ansible-playbook -i /mnt/c/path-to-inventory /mnt/c/path-to-ansible-playbook.yml'
+                sshagent(['ansible-ssh']) {
+                    sh "ssh -o StrictHostKeyChecking=no root@DESKTOP-H0V8LAP-linux-server 'ansible-playbook -i /path/to/inventory /path/to/ansible-playbook.yml'"
+                }
             }
         }
     }
