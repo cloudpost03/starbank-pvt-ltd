@@ -5,14 +5,14 @@ pipeline {
         DOCKER_IMAGE = "star-banking"
         DOCKER_TAG = "latest"
         DOCKER_REGISTRY = "pravinkr11"
-        MAVEN_PATH = "C://apache-maven-3.9.9/bin//mvn"  // Ensure Maven is correctly referenced
+        MAVEN_PATH = "C:\\Maven\\bin\\mvn"
     }
 
     stages {
         stage('Checkout') {
             steps {
                 checkout([$class: 'GitSCM',
-                    branches: [[name: '*/master']], // Ensure branch name is correct
+                    branches: [[name: '*/master']],
                     userRemoteConfigs: [[
                         url: 'https://github.com/cloudpost03/star-agile-banking-finance',
                         credentialsId: 'github_cred'
@@ -23,25 +23,25 @@ pipeline {
 
         stage('Build') {
             steps {
-                bat '%MAVEN_PATH% clean package -DskipTests'  // Use full Maven path
+                bat '%MAVEN_PATH% clean package'
             }
         }
 
-        stage('Test') {
+        stage('Verify JAR File') {
             steps {
-                bat '%MAVEN_PATH% test'  // Use full Maven path
+                bat 'dir target\\*.jar'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                bat "docker build -t %DOCKER_REGISTRY%/%DOCKER_IMAGE%:%DOCKER_TAG% ."  // Windows variable syntax
+                bat "docker build -t %DOCKER_REGISTRY%/%DOCKER_IMAGE%:%DOCKER_TAG% ."
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                withDockerRegistry([credentialsId: 'dockerhub_cred', url: '']) {
+                docker.withRegistry('', 'dockerhub_cred') {
                     bat "docker push %DOCKER_REGISTRY%/%DOCKER_IMAGE%:%DOCKER_TAG%"
                 }
             }
@@ -49,7 +49,7 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                bat 'ansible-playbook -i inventory deploy.yml'  // Change 'sh' to 'bat'
+                bat 'ansible-playbook -i inventory deploy.yml'
             }
         }
     }
