@@ -50,7 +50,7 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                bat 'ansible-playbook -i inventory deploy.yml'  // Change 'sh' to 'bat'
+                bat 'ansible-playbook -i inventory ansible-playbook.yml'  // Change 'sh' to 'bat'
             }
         }
     }
