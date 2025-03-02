@@ -6,7 +6,7 @@ pipeline {
         DOCKER_TAG = "latest"
         DOCKER_REGISTRY = "pravinkr11"
         MAVEN_PATH = "C:\\apache-maven-3.9.9\\bin\\mvn"
-        CONTAINER_IMAGE = "pravinkr11/bank-finance:0.1"
+        CONTAINER_IMAGE = "pravinkr11/star-banking:latest"
     }
 
     stages {
