@@ -5,8 +5,8 @@ pipeline {
         DOCKER_IMAGE = "star-banking"
         DOCKER_TAG = "latest"
         DOCKER_REGISTRY = "pravinkr11"
-        MAVEN_PATH = "C:\\apache-maven-3.9.9\\bin\\mvn"  // Corrected Windows path
-        CONTAINER_IMAGE = "pravinkr11/bank-finance:0.1"  // Lowercase as per Docker's requirement
+        MAVEN_PATH = "C:\\apache-maven-3.9.9\\bin\\mvn"
+        CONTAINER_IMAGE = "pravinkr11/bank-finance:0.1"
     }
 
     stages {
@@ -53,19 +53,20 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    if (isUnix()) {
-                        // Running on Linux Jenkins
-                        sh '''
-                            sudo apt-get update &&
-                            sudo apt-get install -y docker.io &&
-                            sudo systemctl start docker &&
-                            docker run -itd -p 8084:8081 $CONTAINER_IMAGE
-                        '''
-                    } else {
-                        // Running on Windows Jenkins
-                        bat '''
-                            docker run -itd -p 8084:8081 %CONTAINER_IMAGE%
-                        '''
+                    withCredentials([string(credentialsId: 'dockerhub_cred', variable: 'DOCKER_HUB_PASSWORD')]) {
+                        if (isUnix()) {
+                            sh '''
+                                echo $DOCKER_HUB_PASSWORD | docker login -u pravinkr11 --password-stdin
+                                docker pull pravinkr11/bank-finance:0.1
+                                docker run -itd -p 8084:8081 pravinkr11/bank-finance:0.1
+                            '''
+                        } else {
+                            bat '''
+                                echo %DOCKER_HUB_PASSWORD% | docker login -u pravinkr11 --password-stdin
+                                docker pull pravinkr11/bank-finance:0.1
+                                docker run -itd -p 8084:8081 pravinkr11/bank-finance:0.1
+                            '''
+                        }
                     }
                 }
             }
