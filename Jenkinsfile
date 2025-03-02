@@ -5,9 +5,9 @@ pipeline {
         DOCKER_IMAGE = "star-banking"
         DOCKER_TAG = "latest"
         DOCKER_REGISTRY = "pravinkr11"
-        MAVEN_PATH = "C://apache-maven-3.9.9/bin/mvn"  // Ensure Maven is correctly referenced
-        SSH_PRIVATE_KEY = "C:/path/to/id_rsa.ppk"  // Ensure the correct private key for SSH
-        REMOTE_HOST = "I"  // Use actual IP instead of hostname
+        MAVEN_PATH = "C:/apache-maven-3.9.9/bin/mvn"  // Ensure correct Maven path
+        SSH_PRIVATE_KEY = "C:/Users/kumar/.ssh/id_rsa.ppk"  // Correct SSH key path
+        REMOTE_HOST = "172.22.215.121"  // Use actual private IP
         REMOTE_USER = "root"  
     }
 
@@ -15,7 +15,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout([$class: 'GitSCM',
-                    branches: [[name: '*/master']], // Ensure branch name is correct
+                    branches: [[name: '*/master']], 
                     userRemoteConfigs: [[
                         url: 'https://github.com/cloudpost03/star-agile-banking-finance',
                         credentialsId: 'github_cred'
@@ -26,13 +26,13 @@ pipeline {
 
         stage('Build') {
             steps {
-                bat '%MAVEN_PATH% clean package -DskipTests'  // Use full Maven path
+                bat '"%MAVEN_PATH%" clean package -DskipTests'  // Ensure correct Windows batch syntax
             }
         }
 
         stage('Test') {
             steps {
-                bat '%MAVEN_PATH% test'  // Use full Maven path
+                bat '"%MAVEN_PATH%" test'
             }
         }
 
@@ -45,7 +45,7 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    withDockerRegistry([credentialsId: 'dockerhub_cred', url: 'https://index.docker.io/v1/']) {
+                    withDockerRegistry([credentialsId: 'dockerhub_cred', url: '']) {
                         bat "docker push %DOCKER_REGISTRY%/%DOCKER_IMAGE%:%DOCKER_TAG%"
                     }
                 }
@@ -56,7 +56,7 @@ pipeline {
             steps {
                 script {
                     bat '''
-                        echo y | plink -ssh -i %SSH_PRIVATE_KEY% %REMOTE_USER%@%REMOTE_HOST% ^
+                        echo y | plink -ssh -i "%SSH_PRIVATE_KEY%" %REMOTE_USER%@%REMOTE_HOST% ^
                         "ansible-playbook -i /path/to/inventory /path/to/ansible-playbook.yml"
                     '''
                 }
