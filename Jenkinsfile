@@ -22,33 +22,33 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'mvn clean package -DskipTests'
+                bat 'mvn clean package -DskipTests'  // Windows uses 'bat' instead of 'sh'
             }
         }
 
         stage('Test') {
             steps {
-                sh 'mvn test'
+                bat 'mvn test'  // Change 'sh' to 'bat' for Windows
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t $DOCKER_REGISTRY/$DOCKER_IMAGE:$DOCKER_TAG ."
+                bat "docker build -t %DOCKER_REGISTRY%/%DOCKER_IMAGE%:%DOCKER_TAG% ."  // Windows variable syntax
             }
         }
 
         stage('Push Docker Image') {
             steps {
                 withDockerRegistry([credentialsId: 'dockerhub_cred', url: '']) {
-                    sh "docker push $DOCKER_REGISTRY/$DOCKER_IMAGE:$DOCKER_TAG"
+                    bat "docker push %DOCKER_REGISTRY%/%DOCKER_IMAGE%:%DOCKER_TAG%"
                 }
             }
         }
 
         stage('Deploy') {
             steps {
-                sh 'ansible-playbook -i inventory deploy.yml'
+                bat 'ansible-playbook -i inventory deploy.yml'  // Change 'sh' to 'bat'
             }
         }
     }
