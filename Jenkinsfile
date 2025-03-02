@@ -10,7 +10,7 @@ pipeline {
 		stage('Checkout') {
     steps {
         checkout([$class: 'GitSCM',
-            branches: [[name: '*/main']],
+            branches: [[name: '*/master']],
             userRemoteConfigs: [[
                 url: 'https://github.com/cloudpost03/star-agile-banking-finance',
                 credentialsId: 'github_cred'
