@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -42,15 +41,18 @@ pipeline {
 
         stage('Push Docker Image') {
             steps {
-                withDockerRegistry([credentialsId: 'dockerhub_cred', url: '']) {
-                    bat "docker push %DOCKER_REGISTRY%/%DOCKER_IMAGE%:%DOCKER_TAG%"
+                script {
+                    docker.withRegistry('', 'dockerhub_cred') {
+                        bat "docker push %DOCKER_REGISTRY%/%DOCKER_IMAGE%:%DOCKER_TAG%"
+                    }
                 }
             }
         }
 
-stage('Deploy') {
-    steps {
-        bat 'wsl ansible-playbook -i /mnt/c/path-to-inventory /mnt/c/path-to-ansible-playbook.yml'
+        stage('Deploy') {
+            steps {
+                bat 'wsl ansible-playbook -i /mnt/c/path-to-inventory /mnt/c/path-to-ansible-playbook.yml'
             }
         }
-     }
+    }
+}
