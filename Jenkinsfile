@@ -7,8 +7,9 @@ pipeline {
         DOCKER_REGISTRY = "pravinkr11"
         MAVEN_PATH = "C:/apache-maven-3.9.9/bin/mvn"  // Ensure correct Maven path
         SSH_PRIVATE_KEY = "C:/Users/kumar/.ssh/id_rsa.ppk"  // Correct SSH key path
-        REMOTE_HOST = "172.22.215.121"  // Use actual private IP
-        REMOTE_USER = "root"  
+        REMOTE_HOST = "172.22.215.121"  // Use actual private IP or public EC2 IP
+        REMOTE_USER = "root"
+        CONTAINER_IMAGE = "pravinkr11/bank-finance:0.1"  // Define the container image
     }
 
     stages {
@@ -26,7 +27,7 @@ pipeline {
 
         stage('Build') {
             steps {
-                bat '"%MAVEN_PATH%" clean package -DskipTests'  // Ensure correct Windows batch syntax
+                bat '"%MAVEN_PATH%" clean package -DskipTests'
             }
         }
 
@@ -57,7 +58,7 @@ pipeline {
                 script {
                     bat '''
                         echo y | plink -ssh -i "%SSH_PRIVATE_KEY%" %REMOTE_USER%@%REMOTE_HOST% ^
-                        "ansible-playbook -i /path/to/inventory /path/to/ansible-playbook.yml"
+                        "sudo apt-get update && sudo apt-get install -y docker.io && sudo systemctl start docker && docker run -itd -p 8084:8081 %CONTAINER_IMAGE%"
                     '''
                 }
             }
