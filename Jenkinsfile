@@ -6,27 +6,20 @@ pipeline {
         DOCKER_TAG = "latest"
         DOCKER_REGISTRY = "pravinkr11"
     }
-		
-		stage('Checkout') {
-    steps {
-        checkout([$class: 'GitSCM',
-            branches: [[name: '*/master']],
-            userRemoteConfigs: [[
-                url: 'https://github.com/cloudpost03/star-agile-banking-finance',
-                credentialsId: 'github_cred'
-            ]]
-        ])
-    }
-}
-			
+
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/cloudpost03/star-agile-banking-finance'
+                checkout([$class: 'GitSCM',
+                    branches: [[name: '*/master']], // Ensure branch name is correct
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/cloudpost03/star-agile-banking-finance',
+                        credentialsId: 'github_cred'
+                    ]]
+                ])
             }
         }
-	}
-	
+
         stage('Build') {
             steps {
                 sh 'mvn clean package -DskipTests'
@@ -59,3 +52,4 @@ pipeline {
             }
         }
     }
+}
