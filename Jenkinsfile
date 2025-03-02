@@ -48,10 +48,9 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
-            steps {
-                bat 'ansible-playbook -i inventory ansible-playbook.yml'  // Change 'sh' to 'bat'
+stage('Deploy') {
+    steps {
+        bat 'wsl ansible-playbook -i /mnt/c/path-to-inventory /mnt/c/path-to-ansible-playbook.yml'
             }
         }
-    }
-}
+     }
