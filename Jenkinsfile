@@ -7,7 +7,7 @@ pipeline {
         DOCKER_REGISTRY = "pravinkr11"
         MAVEN_PATH = "C:\\apache-maven-3.9.9\\bin\\mvn"
         CONTAINER_IMAGE = "pravinkr11/bank-finance:0.1"
-        PROMETHEUS_VERSION = "2.37.9"  // Set Prometheus version
+        PROMETHEUS_VERSION = "2.37.9"
     }
 
     stages {
@@ -26,21 +26,22 @@ pipeline {
         stage('Setup Prometheus') {
             steps {
                 script {
-                    if (isUnix()) {
-                        sh '''
-                            wget https://github.com/prometheus/prometheus/releases/download/v${PROMETHEUS_VERSION}/prometheus-${PROMETHEUS_VERSION}.linux-amd64.tar.gz
-                            tar xvf prometheus-${PROMETHEUS_VERSION}.linux-amd64.tar.gz
-                            cd prometheus-${PROMETHEUS_VERSION}.linux-amd64
-                            ./prometheus --config.file=prometheus.yml --web.listen-address=":9090" &
-                        '''
-                    } else {
-                        bat '''
-                            curl -o prometheus.zip https://github.com/prometheus/prometheus/releases/download/v%PROMETHEUS_VERSION%/prometheus-%PROMETHEUS_VERSION%.windows-amd64.zip
-                            tar -xf prometheus.zip
-                            cd prometheus-%PROMETHEUS_VERSION%.windows-amd64
-                            start prometheus --config.file=prometheus.yml --web.listen-address=":9090"
-                        '''
-                    }
+                    bat '''
+                        REM Download Prometheus zip
+                        curl -L -o prometheus.zip https://github.com/prometheus/prometheus/releases/download/v%PROMETHEUS_VERSION%/prometheus-%PROMETHEUS_VERSION%.windows-amd64.zip
+                        
+                        REM Extract Prometheus
+                        powershell -Command "Expand-Archive -Path prometheus.zip -DestinationPath ."
+                        
+                        REM Navigate to Prometheus directory
+                        pushd prometheus-%PROMETHEUS_VERSION%.windows-amd64
+                        
+                        REM Start Prometheus in the background
+                        start /b prometheus.exe --config.file=prometheus.yml --web.listen-address=":9090"
+                        
+                        REM Return to previous directory
+                        popd
+                    '''
                 }
             }
         }
