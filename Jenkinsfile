@@ -43,8 +43,11 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    withDockerRegistry([credentialsId: 'dockerhub_cred', url: '']) {
-                        bat "docker push %DOCKER_REGISTRY%/%DOCKER_IMAGE%:%DOCKER_TAG%"
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub_cred', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        bat '''
+                            echo %DOCKER_PASSWORD% | docker login -u %DOCKER_USERNAME% --password-stdin
+                            docker push %DOCKER_REGISTRY%/%DOCKER_IMAGE%:%DOCKER_TAG%
+                        '''
                     }
                 }
             }
@@ -53,18 +56,18 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    withCredentials([string(credentialsId: 'dockerhub_cred', variable: 'DOCKER_HUB_PASSWORD')]) {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub_cred', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                         if (isUnix()) {
                             sh '''
-                                echo $DOCKER_HUB_PASSWORD | docker login -u pravinkr11 --password-stdin
-                                docker pull pravinkr11/bank-finance:0.1
-                                docker run -itd -p 8084:8081 pravinkr11/bank-finance:0.1
+                                echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+                                docker pull $CONTAINER_IMAGE
+                                docker run -itd -p 8084:8081 $CONTAINER_IMAGE
                             '''
                         } else {
                             bat '''
-                                echo %DOCKER_HUB_PASSWORD% | docker login -u pravinkr11 --password-stdin
-                                docker pull pravinkr11/bank-finance:0.1
-                                docker run -itd -p 8084:8081 pravinkr11/bank-finance:0.1
+                                echo %DOCKER_PASSWORD% | docker login -u %DOCKER_USERNAME% --password-stdin
+                                docker pull %CONTAINER_IMAGE%
+                                docker run -itd -p 8084:8081 %CONTAINER_IMAGE%
                             '''
                         }
                     }
