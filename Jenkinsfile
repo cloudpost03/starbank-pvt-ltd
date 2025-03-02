@@ -5,7 +5,7 @@ pipeline {
         DOCKER_IMAGE = "star-banking"
         DOCKER_TAG = "latest"
         DOCKER_REGISTRY = "pravinkr11"
-        MAVEN_PATH = "C://apache-maven-3.9.9/bin//mvn"  // Ensure Maven is correctly referenced
+        MAVEN_PATH = "C:/apache-maven-3.9.9/bin/mvn"  // Fixed Maven path for Windows
     }
 
     stages {
@@ -35,14 +35,14 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                bat "docker build -t %DOCKER_REGISTRY%/%DOCKER_IMAGE%:%DOCKER_TAG% ."  // Windows variable syntax
+                bat "docker build -t %DOCKER_REGISTRY%/%DOCKER_IMAGE%:%DOCKER_TAG% ."
             }
         }
 
         stage('Push Docker Image') {
             steps {
                 script {
-                    docker.withRegistry('', 'dockerhub_cred') {
+                    withDockerRegistry([credentialsId: 'dockerhub_cred', url: '']) {
                         bat "docker push %DOCKER_REGISTRY%/%DOCKER_IMAGE%:%DOCKER_TAG%"
                     }
                 }
@@ -51,8 +51,11 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                sshagent(['ansible-ssh']) {
-                    sh "ssh -o StrictHostKeyChecking=no root@DESKTOP-H0V8LAP-linux-server 'ansible-playbook -i /path/to/inventory /path/to/ansible-playbook.yml'"
+                script {
+                    bat """
+                    echo y | plink -ssh -i C:/path/to/id_rsa.ppk root@DESKTOP-H0V8LAP-linux-server ^
+                    "ansible-playbook -i /path/to/inventory /path/to/ansible-playbook.yml"
+                    """
                 }
             }
         }
