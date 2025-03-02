@@ -13,7 +13,7 @@ pipeline {
             branches: [[name: '*/main']],
             userRemoteConfigs: [[
                 url: 'https://github.com/cloudpost03/star-agile-banking-finance',
-                credentialsId: 'github-credentials'
+                credentialsId: 'github_cred'
             ]]
         ])
     }
