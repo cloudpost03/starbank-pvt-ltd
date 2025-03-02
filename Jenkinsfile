@@ -6,7 +6,7 @@ pipeline {
         DOCKER_TAG = "latest"
         DOCKER_REGISTRY = "pravinkr11"
         MAVEN_PATH = "C://apache-maven-3.9.9/bin/mvn"  // Ensure Maven is correctly referenced
-        SSH_PRIVATE_KEY = "C:/path/to/id_rsa"  // Ensure the correct private key for SSH
+        SSH_PRIVATE_KEY = "C:/path/to/id_rsa.ppk"  // Ensure the correct private key for SSH
         REMOTE_HOST = "I"  // Use actual IP instead of hostname
         REMOTE_USER = "root"  
     }
