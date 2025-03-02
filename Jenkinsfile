@@ -5,7 +5,7 @@ pipeline {
         DOCKER_IMAGE = "star-banking"
         DOCKER_TAG = "latest"
         DOCKER_REGISTRY = "pravinkr11"
-        MAVEN_PATH = "C:\\Maven\\bin\\mvn"  // Ensure Maven is correctly referenced
+        MAVEN_PATH = "C:\apache-maven-3.9.9\bin\mvn"  // Ensure Maven is correctly referenced
     }
 
     stages {
