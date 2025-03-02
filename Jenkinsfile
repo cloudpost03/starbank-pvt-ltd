@@ -5,6 +5,7 @@ pipeline {
         DOCKER_IMAGE = "star-banking"
         DOCKER_TAG = "latest"
         DOCKER_REGISTRY = "pravinkr11"
+        MAVEN_PATH = "C:\\Maven\\bin\\mvn"  // Ensure Maven is correctly referenced
     }
 
     stages {
@@ -22,13 +23,13 @@ pipeline {
 
         stage('Build') {
             steps {
-                bat 'mvn clean package -DskipTests'  // Windows uses 'bat' instead of 'sh'
+                bat '%MAVEN_PATH% clean package -DskipTests'  // Use full Maven path
             }
         }
 
         stage('Test') {
             steps {
-                bat 'mvn test'  // Change 'sh' to 'bat' for Windows
+                bat '%MAVEN_PATH% test'  // Use full Maven path
             }
         }
 
