@@ -25,7 +25,8 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/cloudpost03/star-agile-banking-finance'
             }
         }
-
+	}
+	
         stage('Build') {
             steps {
                 sh 'mvn clean package -DskipTests'
