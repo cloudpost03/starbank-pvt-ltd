@@ -41,8 +41,10 @@ pipeline {
 
         stage('Push Docker Image') {
             steps {
-                docker.withRegistry('', 'dockerhub_cred') {
-                    bat "docker push %DOCKER_REGISTRY%/%DOCKER_IMAGE%:%DOCKER_TAG%"
+                script {
+                    docker.withRegistry('', 'dockerhub_cred') {
+                        bat "docker push %DOCKER_REGISTRY%/%DOCKER_IMAGE%:%DOCKER_TAG%"
+                    }
                 }
             }
         }
