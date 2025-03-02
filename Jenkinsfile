@@ -18,7 +18,7 @@ pipeline {
                         url: 'https://github.com/cloudpost03/star-agile-banking-finance',
                         credentialsId: 'github_cred'
                     ]]
-                ]])
+                ])  // Fixed extra bracket issue
             }
         }
 
