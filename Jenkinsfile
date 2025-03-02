@@ -5,25 +5,37 @@ pipeline {
         DOCKER_IMAGE = "star-banking"
         DOCKER_TAG = "latest"
         DOCKER_REGISTRY = "pravinkr11"
-        MAVEN_PATH = "C:\\Maven\\bin\\mvn"
     }
-
+		
+		stage('Checkout') {
+    steps {
+        checkout([$class: 'GitSCM',
+            branches: [[name: '*/master']],
+            userRemoteConfigs: [[
+                url: 'https://github.com/cloudpost03/star-agile-banking-finance',
+                credentialsId: 'github_cred'
+            ]]
+        ])
+    }
+}
+			
     stages {
         stage('Checkout') {
             steps {
-                checkout([$class: 'GitSCM',
-                    branches: [[name: '*/master']],
-                    userRemoteConfigs: [[
-                        url: 'https://github.com/cloudpost03/star-agile-banking-finance',
-                        credentialsId: 'github_cred'
-                    ]]
-                ])
+                git branch: 'main', url: 'https://github.com/cloudpost03/star-agile-banking-finance'
+            }
+        }
+	}
+	
+        stage('Build') {
+            steps {
+                sh 'mvn clean package -DskipTests'
             }
         }
 
-        stage('Build') {
+        stage('Test') {
             steps {
-                bat '%MAVEN_PATH% clean package'
+                sh 'mvn test'
             }
         }
 
