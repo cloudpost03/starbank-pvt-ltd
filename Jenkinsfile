@@ -6,7 +6,19 @@ pipeline {
         DOCKER_TAG = "latest"
         DOCKER_REGISTRY = "pravinkr11"
     }
-
+		
+		stage('Checkout') {
+    steps {
+        checkout([$class: 'GitSCM',
+            branches: [[name: '*/main']],
+            userRemoteConfigs: [[
+                url: 'https://github.com/cloudpost03/star-agile-banking-finance',
+                credentialsId: 'github-credentials'
+            ]]
+        ])
+    }
+}
+			
     stages {
         stage('Checkout') {
             steps {
