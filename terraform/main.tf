@@ -15,7 +15,7 @@ variable "instance_type_worker" {
 }
 
 variable "key_name" {
-  default = "MUMBAI"
+  default = "assign-key-mumbai"
 }
 
 variable "security_group_id" {
