@@ -23,8 +23,9 @@ resource "aws_instance" "K8s-Slave1" {
   tags = {
     Name = "Machine -2"
   }
-  
-  # Security Group
+}
+
+# Security Group
 resource "aws_security_group" "devops_sg" {
   name        = "default"
   description = "Allow SSH, HTTP, and monitoring ports"
@@ -71,6 +72,3 @@ resource "aws_security_group" "devops_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
-}
-
-
