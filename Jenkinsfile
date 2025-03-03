@@ -117,7 +117,7 @@ pipeline {
     steps {
         sh '''
             set -e
-            ${MAVEN_PATH} clean
+            ${MAVEN_PATH} clean package
             ${MAVEN_PATH} compile
             ${MAVEN_PATH} test
             ${MAVEN_PATH} package
