@@ -114,14 +114,17 @@ pipeline {
         }
 
         stage('Package with Maven') {
-            steps {
-                sh '''
-                    set -e
-                    ${MAVEN_PATH} clean package -DskipTests
-                '''
-            }
-        }
-
+    steps {
+        sh '''
+            set -e
+            ${MAVEN_PATH} clean
+            ${MAVEN_PATH} compile
+            ${MAVEN_PATH} test
+            ${MAVEN_PATH} package
+            ${MAVEN_PATH} install
+        '''
+    }
+}
         stage('Build Docker Image') {
             steps {
                 sh '''
