@@ -5,8 +5,8 @@ pipeline {
         DOCKER_IMAGE = "star-banking"
         DOCKER_TAG = "latest"
         DOCKER_REGISTRY = "pravinkr11"
-        MAVEN_PATH = "/opt/apache-maven-3.9.9/bin/mvn"
-        CONTAINER_IMAGE = "pravinkr11/star-banking:latest"
+        MAVEN_PATH = sh(script: 'which mvn', returnStdout: true).trim()
+        CONTAINER_IMAGE = "${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}"
         ANSIBLE_INVENTORY = "/path/to/inventory"  // Update this path as needed
     }
 
@@ -16,7 +16,7 @@ pipeline {
                 checkout([$class: 'GitSCM',
                     branches: [[name: '*/master']], 
                     userRemoteConfigs: [[
-                        url: 'https://github.com/cloudpost03/star-agile-banking-finance',
+                        url: 'https://github.com/cloudpost03/star-agile-banking-finance.git',
                         credentialsId: 'github_cred'
                     ]]
                 ])
@@ -25,31 +25,46 @@ pipeline {
 
         stage('Compile with Maven') {
             steps {
-                sh "\"${MAVEN_PATH}\" compile"
+                sh '''
+                    set -e
+                    ${MAVEN_PATH} compile
+                '''
             }
         }
 
         stage('Test with Maven') {
             steps {
-                sh "\"${MAVEN_PATH}\" test"
+                sh '''
+                    set -e
+                    ${MAVEN_PATH} test
+                '''
             }
         }
 
         stage('Install with Maven') {
             steps {
-                sh "\"${MAVEN_PATH}\" install"
+                sh '''
+                    set -e
+                    ${MAVEN_PATH} install
+                '''
             }
         }
 
         stage('Package with Maven') {
             steps {
-                sh "\"${MAVEN_PATH}\" clean package -DskipTests"
+                sh '''
+                    set -e
+                    ${MAVEN_PATH} clean package -DskipTests
+                '''
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                sh '''
+                    set -e
+                    docker build -t ${CONTAINER_IMAGE} .
+                '''
             }
         }
 
@@ -57,7 +72,11 @@ pipeline {
             steps {
                 script {
                     withDockerRegistry([credentialsId: 'dockerhub_cred', url: '']) {
-                        sh "docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}"
+                        sh '''
+                            set -e
+                            docker login -u "${DOCKER_REGISTRY}" -p "${DOCKER_PASSWORD}"
+                            docker push ${CONTAINER_IMAGE}
+                        '''
                     }
                 }
             }
@@ -67,6 +86,7 @@ pipeline {
             steps {
                 script {
                     sh '''
+                        set -e
                         ansible-playbook -i ${ANSIBLE_INVENTORY} ansible/ansible-playbook.yml
                     '''
                 }
