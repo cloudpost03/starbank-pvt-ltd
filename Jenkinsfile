@@ -23,38 +23,33 @@ pipeline {
             }
         }
 
-        stage('Setup Prometheus') {
+        stage('Compile with Maven') {
             steps {
-                script {
-                    bat '''
-                        REM Download Prometheus zip
-                        curl -L -o prometheus.zip https://github.com/prometheus/prometheus/releases/download/v%PROMETHEUS_VERSION%/prometheus-%PROMETHEUS_VERSION%.windows-amd64.zip
-                        
-                        REM Extract Prometheus
-                        powershell -Command "Expand-Archive -Path prometheus.zip -DestinationPath ."
-                        
-                        REM Navigate to Prometheus directory
-                        pushd prometheus-%PROMETHEUS_VERSION%.windows-amd64
-                        
-                        REM Start Prometheus in the background
-                        start /b prometheus.exe --config.file=prometheus.yml --web.listen-address=":9090"
-                        
-                        REM Return to previous directory
-                        popd
-                    '''
-                }
+                sh "\"${MAVEN_PATH}\" compile"
             }
         }
 
-        stage('Build with Maven') {
+        stage('Test with Maven') {
             steps {
-                bat "\"%MAVEN_PATH%\" clean package -DskipTests"
+                sh "\"${MAVEN_PATH}\" test"
+            }
+        }
+
+        stage('Install with Maven') {
+            steps {
+                sh "\"${MAVEN_PATH}\" install"
+            }
+        }
+
+        stage('Package with Maven') {
+            steps {
+                sh "\"${MAVEN_PATH}\" clean package -DskipTests"
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                bat "docker build -t %DOCKER_REGISTRY%/%DOCKER_IMAGE%:%DOCKER_TAG% ."
+                sh "docker build -t ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG} ."
             }
         }
 
@@ -62,17 +57,17 @@ pipeline {
             steps {
                 script {
                     withDockerRegistry([credentialsId: 'dockerhub_cred', url: '']) {
-                        bat "docker push %DOCKER_REGISTRY%/%DOCKER_IMAGE%:%DOCKER_TAG%"
+                        sh "docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}"
                     }
                 }
             }
         }
 
-        stage('Deploy & Monitor') {
+        stage('Deploy Application using Ansible') {
             steps {
                 script {
-                    bat '''
-                        docker run -itd -p 8081:8081 %CONTAINER_IMAGE%
+                    sh '''
+                        ansible-playbook -i ${ANSIBLE_INVENTORY} ansible/ansible-playbook.yml
                     '''
                 }
             }
