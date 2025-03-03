@@ -26,6 +26,41 @@ pipeline {
             }
         }
 
+        stage('Configure AWS Credentials') {
+            steps {
+                script {
+                    sh '''
+                        export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+                        export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+                        export AWS_REGION=${AWS_REGION}
+                        aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+                        aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+                        aws configure set region $AWS_REGION
+                    '''
+                }
+            }
+        }
+
+        stage('Check AWS Credentials') {
+            steps {
+                script {
+                    sh 'aws sts get-caller-identity'
+                }
+            }
+        }
+
+        stage('Terraform Init & Apply') {
+            steps {
+                script {
+                    sh '''
+                        cd terraform
+                        terraform init
+                        terraform apply -auto-approve
+                    '''
+                }
+            }
+        }
+
         stage('Generate Ansible Inventory') {
             steps {
                 script {
@@ -47,6 +82,64 @@ pipeline {
                         ansible_ssh_common_args='-o StrictHostKeyChecking=no'
                         EOF
                     """
+                }
+            }
+        }
+
+        stage('Compile with Maven') {
+            steps {
+                sh '''
+                    set -e
+                    ${MAVEN_PATH} compile
+                '''
+            }
+        }
+
+        stage('Test with Maven') {
+            steps {
+                sh '''
+                    set -e
+                    ${MAVEN_PATH} test
+                '''
+            }
+        }
+
+        stage('Install with Maven') {
+            steps {
+                sh '''
+                    set -e
+                    ${MAVEN_PATH} install
+                '''
+            }
+        }
+
+        stage('Package with Maven') {
+            steps {
+                sh '''
+                    set -e
+                    ${MAVEN_PATH} clean package -DskipTests
+                '''
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                    set -e
+                    docker build -t ${CONTAINER_IMAGE} .
+                '''
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    withDockerRegistry([credentialsId: 'dockerhub_cred', url: 'https://index.docker.io/v1/']) {
+                        sh '''
+                            set -e
+                            docker push ${CONTAINER_IMAGE}
+                        '''
+                    }
                 }
             }
         }
