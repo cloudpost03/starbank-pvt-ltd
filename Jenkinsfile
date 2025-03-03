@@ -72,7 +72,7 @@ pipeline {
             steps {
                 script {
                     bat '''
-                        docker run -itd -p 8084:8081 %CONTAINER_IMAGE%
+                        docker run -itd -p 8081:8081 %CONTAINER_IMAGE%
                     '''
                 }
             }
