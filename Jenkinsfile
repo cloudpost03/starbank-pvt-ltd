@@ -71,10 +71,9 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    withDockerRegistry([credentialsId: 'dockerhub_cred', url: '']) {
+                    withDockerRegistry([credentialsId: 'dockerhub_cred', url: 'https://index.docker.io/v1/']) {
                         sh '''
                             set -e
-                            docker login -u "${DOCKER_REGISTRY}" -p "${DOCKER_PASSWORD}"
                             docker push ${CONTAINER_IMAGE}
                         '''
                     }
