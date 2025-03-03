@@ -7,7 +7,7 @@ pipeline {
         DOCKER_REGISTRY = "pravinkr11"
         MAVEN_PATH = sh(script: 'which mvn', returnStdout: true).trim()
         CONTAINER_IMAGE = "${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}"
-        ANSIBLE_INVENTORY = "/path/to/inventory"  // Update this path as needed
+        ANSIBLE_INVENTORY = "/var/lib/jenkins/workspace/star-banking-pipeline"  // Update this path as needed
     }
 
     stages {
