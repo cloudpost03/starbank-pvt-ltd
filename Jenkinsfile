@@ -7,9 +7,9 @@ pipeline {
         DOCKER_REGISTRY = "pravinkr11"
         MAVEN_PATH = sh(script: 'which mvn', returnStdout: true).trim()
         CONTAINER_IMAGE = "${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}"
-        ANSIBLE_INVENTORY = "/var/lib/jenkins/workspace/star-banking-pipeline"  // Update this path as needed
-        AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY')
-        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS')
+        ANSIBLE_INVENTORY = "/var/lib/jenkins/workspace/star-banking-pipeline"
+        AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
         AWS_REGION = "ap-south-1"
     }
 
@@ -30,11 +30,11 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        export AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
-                        export AWS_SECRET_ACCESS=${AWS_SECRET_ACCESS}
+                        export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+                        export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
                         export AWS_REGION=${AWS_REGION}
-                        aws configure set aws_access_key_id $AWS_ACCESS_KEY
-                        aws configure set aws_secret_access_key $AWS_SECRET_ACCESS
+                        aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+                        aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
                         aws configure set region $AWS_REGION
                     '''
                 }
