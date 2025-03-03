@@ -5,7 +5,6 @@ pipeline {
         DOCKER_IMAGE = "star-banking"
         DOCKER_TAG = "latest"
         DOCKER_REGISTRY = "pravinkr11"
-        MAVEN_PATH = "C:\\apache-maven-3.9.9\\bin\\mvn"
         CONTAINER_IMAGE = "pravinkr11/star-banking:latest"
         PROMETHEUS_VERSION = "2.37.9"
     }
@@ -25,25 +24,25 @@ pipeline {
 
         stage('Compile with Maven') {
             steps {
-                sh "\"${MAVEN_PATH}\" compile"
+                sh "mvn compile"
             }
         }
 
         stage('Test with Maven') {
             steps {
-                sh "\"${MAVEN_PATH}\" test"
+                sh "mvn test"
             }
         }
 
         stage('Install with Maven') {
             steps {
-                sh "\"${MAVEN_PATH}\" install"
+                sh "mvn install"
             }
         }
 
         stage('Package with Maven') {
             steps {
-                sh "\"${MAVEN_PATH}\" clean package -DskipTests"
+                sh "mvn clean package -DskipTests"
             }
         }
 
@@ -67,7 +66,7 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        ansible-playbook -i ${ANSIBLE_INVENTORY} ansible/ansible-playbook.yml
+                        ansible-playbook -i inventory.ini ansible/ansible-playbook.yml
                     '''
                 }
             }
