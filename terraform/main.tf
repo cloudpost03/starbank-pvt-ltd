@@ -11,7 +11,7 @@ variable "instance_type_master" {
 }
 
 variable "instance_type_worker" {
-  default = "t2.micro"
+  default = "t2.medium"
 }
 
 variable "key_name" {
