@@ -86,7 +86,7 @@ pipeline {
                 script {
                     sh '''
                         set -e
-                        ansible-playbook -i ${ANSIBLE_INVENTORY} ansible/ansible-playbook.yml
+                        ansible-playbook -i ${ANSIBLE_INVENTORY} ansible-playbook.yml
                     '''
                 }
             }
