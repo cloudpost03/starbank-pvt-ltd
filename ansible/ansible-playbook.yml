@@ -1,17 +1,116 @@
-- name: Configure Docker on EC2 Instances
+---
+- name: Install Docker, Kubernetes, Grafana, Prometheus & Deploy Application
   hosts: all
   become: true
   connection: ssh
 
   tasks:
+
+    # 1. Update System & Install Dependencies
     - name: Update apt package list
-      command: apt-get update
+      apt:
+        update_cache: yes
+        upgrade: dist
 
+    - name: Install required dependencies
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+        state: present
+
+    # 2. Install Docker
     - name: Install Docker
-      command: apt-get install -y docker.io
+      apt:
+        name: docker.io
+        state: latest
 
-    - name: Start Docker Service
-      command: systemctl start docker
+    - name: Enable and start Docker service
+      systemd:
+        name: docker
+        enabled: yes
+        state: started
 
-    - name: Deploy Docker Container
+    - name: Add user to docker group
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+
+    # 3. Deploy Docker Container (Star Banking App)
+    - name: Pull and run Star Banking Docker container
       command: docker run -itd -p 8081:8081 pravinkr11/star-banking:latest
+
+    # 4. Install Kubernetes
+    - name: Add Kubernetes apt key
+      shell: curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo tee /usr/share/keyrings/kubernetes-archive-keyring.gpg > /dev/null
+
+    - name: Add Kubernetes repository
+      shell: echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+    - name: Install kubeadm, kubelet, kubectl
+      apt:
+        name:
+          - kubeadm
+          - kubelet
+          - kubectl
+        state: latest
+        update_cache: yes
+
+    - name: Enable kubelet service
+      systemd:
+        name: kubelet
+        enabled: yes
+
+    # 5. Initialize Kubernetes Master Node
+    - name: Initialize Kubernetes master (only on master)
+      command: kubeadm init
+      when: "'master' in group_names"
+
+    - name: Configure kubectl for master
+      shell: |
+        mkdir -p $HOME/.kube
+        cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+        chown $(id -u):$(id -g) $HOME/.kube/config
+      when: "'master' in group_names"
+
+    # 6. Setup Pod Network (Calico)
+    - name: Deploy Calico network (only on master)
+      command: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+      when: "'master' in group_names"
+
+    # 7. Setup Worker Nodes (Join to Master)
+    - name: Get Kubernetes join command (on master)
+      command: kubeadm token create --print-join-command
+      register: join_command
+      when: "'master' in group_names"
+
+    - name: Join Kubernetes cluster (on worker nodes)
+      command: "{{ hostvars['master']['join_command'].stdout }}"
+      when: "'worker' in group_names"
+
+    # 8. Install Prometheus
+    - name: Install Prometheus
+      apt:
+        name: prometheus
+        state: latest
+
+    - name: Enable and start Prometheus
+      systemd:
+        name: prometheus
+        enabled: yes
+        state: started
+
+    # 9. Install Grafana
+    - name: Install Grafana
+      apt:
+        name: grafana
+        state: latest
+
+    - name: Enable and start Grafana
+      systemd:
+        name: grafana-server
+        enabled: yes
+        state: started
