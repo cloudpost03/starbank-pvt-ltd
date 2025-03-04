@@ -1,0 +1,19 @@
+plugin: amazon.aws.aws_ec2  
+
+regions:
+  - ap-south-1
+
+filters:
+  instance-state-name: running
+
+keyed_groups:
+  - key: tags.Name
+    prefix: ''
+
+hostnames:
+  - private-ip-address
+
+compose:
+  ansible_host: private-ip-address
+
+strict: False
