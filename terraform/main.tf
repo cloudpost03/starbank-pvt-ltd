@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 variable "ami_id" {
-  default = "ami-00bb6a80f01f03502"
+  default = "ami-023a307f3d27ea427"
 }
 
 variable "instance_type_master" {
