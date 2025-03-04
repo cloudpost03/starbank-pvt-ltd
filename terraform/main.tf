@@ -25,9 +25,14 @@ variable "security_group_id" {
 # EC2 Instances
 resource "aws_instance" "k8s_master" {
   ami                    = var.ami_id
-  instance_type          = var.instance_type_worker
+  instance_type          = var.instance_type_master
   key_name               = var.key_name
   vpc_security_group_ids = [var.security_group_id]
+
+  root_block_device {
+    volume_size = 20  # 20GB storage for master node
+    volume_type = "gp3"
+  }
 
   tags = {
     Name = "K8s-Master"
@@ -40,6 +45,11 @@ resource "aws_instance" "k8s_slave1" {
   key_name               = var.key_name
   vpc_security_group_ids = [var.security_group_id]
 
+  root_block_device {
+    volume_size = 10  # 10GB storage for worker node
+    volume_type = "gp3"
+  }
+
   tags = {
     Name = "K8s-Slave1"
   }
@@ -47,9 +57,14 @@ resource "aws_instance" "k8s_slave1" {
 
 resource "aws_instance" "machine_3" {
   ami                    = var.ami_id
-  instance_type          = var.instance_type_master
+  instance_type          = var.instance_type_worker
   key_name               = var.key_name
   vpc_security_group_ids = [var.security_group_id]
+
+  root_block_device {
+    volume_size = 10  # 10GB storage for worker node
+    volume_type = "gp3"
+  }
 
   tags = {
     Name = "Machine-3"
